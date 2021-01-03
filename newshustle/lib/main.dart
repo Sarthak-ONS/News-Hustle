@@ -1,7 +1,10 @@
+import 'package:provider/provider.dart';
+
 import 'Networking.dart';
 import 'package:flutter/material.dart';
 import 'SearchDelegate.dart';
 import 'NewsModel.dart';
+import 'providerclass.dart';
 
 List<NewsData> news = [];
 
@@ -26,18 +29,39 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  var isDark = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+        create: (context) => AppData(), child: UnderLyingProvider());
+  }
+}
+
+class UnderLyingProvider extends StatefulWidget {
+  @override
+  _UnderLyingProviderState createState() => _UnderLyingProviderState();
+}
+
+class _UnderLyingProviderState extends State<UnderLyingProvider> {
+  bool isDark;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: Provider.of<AppData>(context).isDark
+          ? ThemeData(primarySwatch: Colors.red)
+          : ThemeData(primarySwatch: Colors.blue),
       home: MyHomePage(
-        title: 'News',
+        title: 'News Hustle',
       ),
     );
   }
@@ -55,20 +79,19 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   NewsGetter newsGetter = NewsGetter();
-  int _counter = 0;
 
   List<Tab> _tabList = [
     Tab(
       child: Text('Top'),
     ),
     Tab(
-      child: Text('Popular'),
+      child: Text('Tech'),
     ),
     Tab(
-      child: Text('Trending'),
+      child: Text('Business'),
     ),
     Tab(
-      child: Text('Editor Choice'),
+      child: Text('India'),
     ),
     Tab(
       child: Text('Coronvirus'),
@@ -76,32 +99,12 @@ class _MyHomePageState extends State<MyHomePage>
   ];
 
   TabController _tabController;
-
-  Future<void> _incrementCounter() async {
-    print(news);
-    setState(
-      () {
-        _counter++;
-      },
-    );
-  }
-
-  // Future<List<NewsData>> getNews() async {
-  //   var response = await http.get(url);
-  //   var decoded = jsonDecode(response.body);
-  //   var loopOver = decoded['articles'];
-  //   print(loopOver.length);
-  //   for (var item in loopOver) {
-  //     NewsData n = NewsData(item['url'], item['urlToImage'], item['title'],
-  //         item['publishedAt'], item['author']);
-  //     news.add(n);
-  //   }
-  //   return news;
-  // }
+  ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     _tabController = TabController(length: _tabList.length, vsync: this);
   }
 
@@ -118,16 +121,11 @@ class _MyHomePageState extends State<MyHomePage>
         toolbarHeight: 100.0,
         title: Text(widget.title),
         centerTitle: true,
-        actions: [
-          IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () {
-                showSearch(context: context, delegate: DataSearch());
-              })
-        ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(30.0),
           child: TabBar(
+            onTap: _onTap,
+            indicatorSize: TabBarIndicatorSize.tab,
             controller: _tabController,
             isScrollable: true,
             indicatorColor: Colors.white,
@@ -139,23 +137,61 @@ class _MyHomePageState extends State<MyHomePage>
         child: ListView(
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: Colors.red),
-              child: Text(
-                'News',
-                style: TextStyle(fontSize: 24),
+              decoration: BoxDecoration(
+                  color: Provider.of<AppData>(context).isDark
+                      ? Colors.red
+                      : Colors.blue),
+              child: Center(
+                child: Text(
+                  'News Hustle',
+                  style: TextStyle(fontSize: 24, color: Colors.white),
+                ),
               ),
             ),
             ListTile(
+              onTap: () {
+                print(Provider.of<AppData>(context, listen: false).somedata);
+              },
               leading: IconButton(icon: Icon(Icons.add), onPressed: () {}),
               title: Text('BookMark'),
             ),
-            ListTile(
-              leading: IconButton(icon: Icon(Icons.category), onPressed: () {}),
-              title: Text('BookMark'),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+              child: Divider(
+                thickness: 2,
+              ),
             ),
             ListTile(
-              leading: IconButton(icon: Icon(Icons.ac_unit), onPressed: () {}),
-              title: Text('BookMark'),
+              leading: IconButton(icon: Icon(Icons.category), onPressed: () {}),
+              title: Text(
+                'Change Color Theme To Red',
+                style: TextStyle(
+                  fontSize: 14,
+                ),
+              ),
+              trailing: Switch(
+                value: Provider.of<AppData>(context).isDark,
+                onChanged: (value) {
+                  Provider.of<AppData>(context, listen: false)
+                      .changeTheme(value);
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+              child: Divider(
+                thickness: 2,
+              ),
+            ),
+            ListTile(
+              leading: IconButton(icon: Icon(Icons.filter), onPressed: () {}),
+              title: Text('Filters'),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+              child: Divider(
+                thickness: 2,
+              ),
             ),
           ],
         ),
@@ -171,78 +207,85 @@ class _MyHomePageState extends State<MyHomePage>
                   return Center(child: CircularProgressIndicator());
                 } else {
                   return ListView.builder(
+                    controller: _scrollController,
                     itemCount: snapshot.data.length,
                     itemBuilder: (context, index) {
                       return Card(
                         elevation: 2.0,
                         margin: EdgeInsets.only(bottom: 8.0),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 80,
-                                height: 80.0,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image:
-                                        snapshot.data[index].urltoIMage == null
-                                            ? NetworkImage(
-                                                'https://th.bing.com/th/id/OIP.IPdQITB523qzc6uQR6rgGgHaE8?w=261&h=180&c=7&o=5&pid=1.7',
-                                              )
-                                            : NetworkImage(
-                                                snapshot.data[index].urltoIMage,
-                                              ),
+                        child: InkWell(
+                          splashColor: Colors.red[100],
+                          onTap: () {},
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 80,
+                                  height: 80.0,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: snapshot.data[index].urltoIMage ==
+                                              null
+                                          ? NetworkImage(
+                                              'https://th.bing.com/th/id/OIP.IPdQITB523qzc6uQR6rgGgHaE8?w=261&h=180&c=7&o=5&pid=1.7',
+                                            )
+                                          : NetworkImage(
+                                              snapshot.data[index].urltoIMage,
+                                            ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: 5.0),
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      snapshot.data[index].title == null
-                                          ? 'Unknown'
-                                          : snapshot.data[index].title,
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(
-                                      height: 10.0,
-                                    ),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.person,
-                                          color: Colors.black,
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            snapshot.data[index].author == null
-                                                ? 'Unknown'
-                                                : snapshot.data[index].author,
-                                            style: TextStyle(
-                                              color: Colors.blue,
-                                              fontSize: 14.0,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
+                                SizedBox(width: 5.0),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        snapshot.data[index].title == null
+                                            ? 'Unknown'
+                                            : snapshot.data[index].title,
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.person,
+                                            color: Colors.black,
                                           ),
-                                        ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              )
-                            ],
+                                          Expanded(
+                                            child: Text(
+                                              snapshot.data[index].author ==
+                                                      null
+                                                  ? 'Unknown'
+                                                  : snapshot.data[index].author,
+                                              style: TextStyle(
+                                                color: Colors.blue,
+                                                fontSize: 14.0,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 10,
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -271,24 +314,26 @@ class _MyHomePageState extends State<MyHomePage>
         ],
         controller: _tabController,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+      floatingActionButton: FloatingActionButton.extended(
+        elevation: 5,
+        label: Row(
+          children: [
+            Text('Search'),
+            SizedBox(width: 5),
+            Icon(Icons.search),
+          ],
+        ),
+        onPressed: () {
+          print(Provider.of<AppData>(context, listen: false).isDark);
+          //showSearch(context: context, delegate: DataSearch());
+        },
         tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
-}
 
-// return ListView.builder(
-//                 itemCount: news.length,
-//                 itemBuilder: (context, index) {
-//                   //print(news[index].title);
-//                   return ListTile(
-//                     leading: Icon(Icons.create_new_folder),
-//                     title: Text(snapshot.data[index].title == null
-//                         ? 'Unkown'
-//                         : snapshot.data[index].title),
-//                   );
-//                 },
-//               )
+  void _onTap(int value) {
+    _scrollController.animateTo(20,
+        duration: Duration(microseconds: 500), curve: Curves.easeInBack);
+  }
+}
