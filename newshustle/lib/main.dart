@@ -1,32 +1,44 @@
+import 'Networking.dart';
 import 'package:flutter/material.dart';
+import 'SearchDelegate.dart';
+import 'NewsModel.dart';
 
+List<NewsData> news = [];
+
+List<String> ll = [
+  "New Delhi",
+  "Chennai",
+  "Banglore",
+  "Lucknow",
+  "Goa",
+  "Mawsynram",
+  "Bareilly",
+  "Ghaziabad",
+  "Merut",
+  "Gandhinagar"
+];
+
+List<String> recent = ["New Delhi", "Chennai", "Banglore"];
+
+const url =
+    "http://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=27421b8e03c54d4f9f18b581d04f1709";
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
+        primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(
+        title: 'News',
+      ),
     );
   }
 }
@@ -34,78 +46,230 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
+  NewsGetter newsGetter = NewsGetter();
   int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  List<Tab> _tabList = [
+    Tab(
+      child: Text('Top'),
+    ),
+    Tab(
+      child: Text('Popular'),
+    ),
+    Tab(
+      child: Text('Trending'),
+    ),
+    Tab(
+      child: Text('Editor Choice'),
+    ),
+    Tab(
+      child: Text('Coronvirus'),
+    ),
+  ];
+
+  TabController _tabController;
+
+  Future<void> _incrementCounter() async {
+    print(news);
+    setState(
+      () {
+        _counter++;
+      },
+    );
+  }
+
+  // Future<List<NewsData>> getNews() async {
+  //   var response = await http.get(url);
+  //   var decoded = jsonDecode(response.body);
+  //   var loopOver = decoded['articles'];
+  //   print(loopOver.length);
+  //   for (var item in loopOver) {
+  //     NewsData n = NewsData(item['url'], item['urlToImage'], item['title'],
+  //         item['publishedAt'], item['author']);
+  //     news.add(n);
+  //   }
+  //   return news;
+  // }
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabList.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
+        toolbarHeight: 100.0,
         title: Text(widget.title),
+        centerTitle: true,
+        actions: [
+          IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                showSearch(context: context, delegate: DataSearch());
+              })
+        ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(30.0),
+          child: TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            indicatorColor: Colors.white,
+            tabs: _tabList,
+          ),
+        ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.red),
+              child: Text(
+                'News',
+                style: TextStyle(fontSize: 24),
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            ListTile(
+              leading: IconButton(icon: Icon(Icons.add), onPressed: () {}),
+              title: Text('BookMark'),
+            ),
+            ListTile(
+              leading: IconButton(icon: Icon(Icons.category), onPressed: () {}),
+              title: Text('BookMark'),
+            ),
+            ListTile(
+              leading: IconButton(icon: Icon(Icons.ac_unit), onPressed: () {}),
+              title: Text('BookMark'),
             ),
           ],
         ),
+      ),
+      body: TabBarView(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: FutureBuilder(
+              future: newsGetter.getNews(),
+              builder: (context, snapshot) {
+                if (snapshot.data == null) {
+                  return Center(child: CircularProgressIndicator());
+                } else {
+                  return ListView.builder(
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        elevation: 2.0,
+                        margin: EdgeInsets.only(bottom: 8.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80.0,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image:
+                                        snapshot.data[index].urltoIMage == null
+                                            ? NetworkImage(
+                                                'https://th.bing.com/th/id/OIP.IPdQITB523qzc6uQR6rgGgHaE8?w=261&h=180&c=7&o=5&pid=1.7',
+                                              )
+                                            : NetworkImage(
+                                                snapshot.data[index].urltoIMage,
+                                              ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 5.0),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      snapshot.data[index].title == null
+                                          ? 'Unknown'
+                                          : snapshot.data[index].title,
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(
+                                      height: 10.0,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.person,
+                                          color: Colors.black,
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            snapshot.data[index].author == null
+                                                ? 'Unknown'
+                                                : snapshot.data[index].author,
+                                            style: TextStyle(
+                                              color: Colors.blue,
+                                              fontSize: 14.0,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Container(),
+          ),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Container(),
+          ),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Container(),
+          ),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Container(),
+          ),
+        ],
+        controller: _tabController,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
@@ -115,3 +279,16 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+// return ListView.builder(
+//                 itemCount: news.length,
+//                 itemBuilder: (context, index) {
+//                   //print(news[index].title);
+//                   return ListTile(
+//                     leading: Icon(Icons.create_new_folder),
+//                     title: Text(snapshot.data[index].title == null
+//                         ? 'Unkown'
+//                         : snapshot.data[index].title),
+//                   );
+//                 },
+//               )
