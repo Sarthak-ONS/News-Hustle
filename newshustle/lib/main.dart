@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:newshustle/descriptionpage.dart';
 import 'package:provider/provider.dart';
 
 import 'Networking.dart';
@@ -5,26 +8,8 @@ import 'package:flutter/material.dart';
 import 'SearchDelegate.dart';
 import 'NewsModel.dart';
 import 'providerclass.dart';
+import 'Filters.dart';
 
-List<NewsData> news = [];
-
-List<String> ll = [
-  "New Delhi",
-  "Chennai",
-  "Banglore",
-  "Lucknow",
-  "Goa",
-  "Mawsynram",
-  "Bareilly",
-  "Ghaziabad",
-  "Merut",
-  "Gandhinagar"
-];
-
-List<String> recent = ["New Delhi", "Chennai", "Banglore"];
-
-const url =
-    "http://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=27421b8e03c54d4f9f18b581d04f1709";
 void main() {
   runApp(MyApp());
 }
@@ -100,10 +85,10 @@ class _MyHomePageState extends State<MyHomePage>
 
   TabController _tabController;
   ScrollController _scrollController;
-
   @override
   void initState() {
     super.initState();
+
     _scrollController = ScrollController();
     _tabController = TabController(length: _tabList.length, vsync: this);
   }
@@ -184,6 +169,10 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ),
             ListTile(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Filters()));
+              },
               leading: IconButton(icon: Icon(Icons.filter), onPressed: () {}),
               title: Text('Filters'),
             ),
@@ -215,7 +204,12 @@ class _MyHomePageState extends State<MyHomePage>
                         margin: EdgeInsets.only(bottom: 8.0),
                         child: InkWell(
                           splashColor: Colors.red[100],
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Description()));
+                          },
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
@@ -297,7 +291,13 @@ class _MyHomePageState extends State<MyHomePage>
           ),
           Padding(
             padding: EdgeInsets.all(8.0),
-            child: Container(),
+            child: Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                  gradient:
+                      LinearGradient(colors: [Colors.red, Colors.yellow])),
+            ),
           ),
           Padding(
             padding: EdgeInsets.all(8.0),
