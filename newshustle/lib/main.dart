@@ -1,4 +1,3 @@
-import 'package:newshustle/descriptionpage.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +8,7 @@ import 'NewsModel.dart';
 import 'providerclass.dart';
 import 'FutureBuilderForTopNews.dart';
 import 'Filters.dart';
+import 'Tech.dart';
 
 void main() {
   runApp(MyApp());
@@ -70,16 +70,10 @@ class _MyHomePageState extends State<MyHomePage>
       child: Text('Top'),
     ),
     Tab(
-      child: Text('Tech'),
+      child: Text('Filtered'),
     ),
     Tab(
-      child: Text('Business'),
-    ),
-    Tab(
-      child: Text('India'),
-    ),
-    Tab(
-      child: Text('Coronvirus'),
+      child: Text('CoronaVirus'),
     ),
   ];
 
@@ -190,6 +184,7 @@ class _MyHomePageState extends State<MyHomePage>
           newsGetter.getNews();
         },
         child: TabBarView(
+          
           children: [
             Padding(
               padding: EdgeInsets.all(8.0),
@@ -198,28 +193,12 @@ class _MyHomePageState extends State<MyHomePage>
                   newsGetter.getNews();
                 },
                 child: FutureBuilderForTopNews(
-                    newsGetter: newsGetter,
-                    scrollController: _scrollController),
+                  newsGetter: newsGetter,
+                  scrollController: _scrollController,
+                ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Container(
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                    gradient:
-                        LinearGradient(colors: [Colors.red, Colors.yellow])),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Container(),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Container(),
-            ),
+            Technology(),
             Padding(
               padding: EdgeInsets.all(8.0),
               child: Container(),
@@ -228,6 +207,7 @@ class _MyHomePageState extends State<MyHomePage>
           controller: _tabController,
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
       floatingActionButton: FloatingActionButton.extended(
         elevation: 5,
         label: Row(
@@ -237,15 +217,8 @@ class _MyHomePageState extends State<MyHomePage>
             Icon(Icons.search),
           ],
         ),
-        onPressed: () async {
-          print(Provider.of<AppData>(context, listen: false).isDark);
-          print(Provider.of<AppData>(context, listen: false).default_Country);
-          print(Provider.of<AppData>(context, listen: false).default_category);
-
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          print(prefs.get("Country"));
-          print(prefs.get("Category"));
-          //showSearch(context: context, delegate: DataSearch());
+        onPressed: () {
+          print('Hey ');
         },
         tooltip: 'Increment',
       ),

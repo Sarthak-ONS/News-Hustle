@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providerclass.dart';
 import 'Networking.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Filters extends StatefulWidget {
   @override
@@ -17,6 +18,19 @@ class _FiltersState extends State<Filters> {
     NewsGetter news = new NewsGetter();
     news.getNews();
     super.dispose();
+  }
+
+  changecountrycategory() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _selectedCountry = prefs.get("Country");
+    _selectedCategory = prefs.get("Category");
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    changecountrycategory();
+    super.initState();
   }
 
   @override
@@ -48,20 +62,12 @@ class _FiltersState extends State<Filters> {
                 child: Padding(
                   child: DropdownButton(
                     dropdownColor: Colors.grey[100],
-
                     style: TextStyle(
                       color: Colors.black,
                     ),
                     icon: Icon(Icons.add),
                     elevation: 20,
                     value: _selectedCountry,
-                    hint: Text(
-                      'Select A country',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    //value: 'au',
                     items: [
                       DropdownMenuItem(
                         child: Text('Australia'),
@@ -119,12 +125,7 @@ class _FiltersState extends State<Filters> {
                     ),
                     icon: Icon(Icons.add),
                     elevation: 20,
-                    hint: Text(
-                      'Select A Cateogory',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
+
                     //value: 'au',
                     items: [
                       DropdownMenuItem(

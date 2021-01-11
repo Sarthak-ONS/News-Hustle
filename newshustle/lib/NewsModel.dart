@@ -4,6 +4,7 @@ class NewsData {
   final String title;
   final String date;
   final String author;
+  final String description;
 
   NewsData(
     this.url,
@@ -11,5 +12,6 @@ class NewsData {
     this.title,
     this.date,
     this.author,
+    this.description
   );
 }

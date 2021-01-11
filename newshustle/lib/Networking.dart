@@ -12,8 +12,11 @@ class NewsGetter {
   Future<List<NewsData>> getNews() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String country = prefs.get("Country");
-      String category = prefs.get("Category");
+      String country =
+          prefs.get("Country") == null ? 'in' : prefs.get("Country");
+      String category =
+          prefs.get("Category") == null ? 'sports' : prefs.get("Category");
+
       print("/////////////////////////");
       print(country);
       print(category);
@@ -23,12 +26,15 @@ class NewsGetter {
       var response = await http.get(url);
       var decoded = jsonDecode(response.body);
       var loopOver = decoded['articles'];
+      print(loopOver[0]);
 
       for (var item in loopOver) {
         NewsData n = NewsData(item['url'], item['urlToImage'], item['title'],
-            item['publishedAt'], item['author']);
+            item['publishedAt'], item['author'],item['content']);
+            print(item['description']);
         news.add(n);
       }
+      print(news[0].description);
       return news;
     } catch (e) {
       return [];
