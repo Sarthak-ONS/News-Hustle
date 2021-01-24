@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'NewsModel.dart';
+import '../Models/NewsModel.dart';
 
 List<NewsData> news = [];
 
@@ -26,15 +26,15 @@ class NewsGetter {
       var response = await http.get(url);
       var decoded = jsonDecode(response.body);
       var loopOver = decoded['articles'];
-      print(loopOver[0]);
+     // print(loopOver[0]);
 
       for (var item in loopOver) {
         NewsData n = NewsData(item['url'], item['urlToImage'], item['title'],
             item['publishedAt'], item['author'],item['content']);
-            print(item['description']);
+            //print(item['description']);
         news.add(n);
       }
-      print(news[0].description);
+      //print(news[0].description);
       return news;
     } catch (e) {
       return [];

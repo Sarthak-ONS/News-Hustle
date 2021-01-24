@@ -98,7 +98,15 @@ class _DescriptionState extends State<Description> {
                   Icons.short_text,
                   color: Colors.white,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: Colors.white,
+                      title: Text('Open in Web View'),
+                    ),
+                  );
+                },
               ),
             ),
           ),

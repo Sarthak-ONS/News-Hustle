@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'Networking.dart';
+import '../Services/Networking.dart';
 import 'descriptionpage.dart';
 import 'package:provider/provider.dart';
-import 'providerclass.dart';
+import '../Providers/providerclass.dart';
 
 class FutureBuilderForTopNews extends StatelessWidget {
   const FutureBuilderForTopNews({
@@ -38,21 +38,20 @@ class FutureBuilderForTopNews extends StatelessWidget {
                             Hero(
                               tag: '$index',
                               child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(25)),
                                 width: 80,
                                 height: 80.0,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image:
-                                        snapshot.data[index].urltoIMage == null
-                                            ? NetworkImage(
-                                                'https://th.bing.com/th/id/OIP.IPdQITB523qzc6uQR6rgGgHaE8?w=261&h=180&c=7&o=5&pid=1.7',
-                                              )
-                                            : NetworkImage(
-                                                snapshot.data[index].urltoIMage,
-                                              ),
-                                  ),
+                                child: FadeInImage(
+                                  fadeInCurve: Curves.bounceOut,
+                                  fit: BoxFit.cover,
+                                  placeholder:
+                                      AssetImage('images/dribbble.gif'),
+                                  image: snapshot.data[index].urltoIMage == null
+                                      ? AssetImage('images/dribbble.gif')
+                                      : NetworkImage(
+                                          snapshot.data[index].urltoIMage,
+                                        ),
                                 ),
                               ),
                             ),

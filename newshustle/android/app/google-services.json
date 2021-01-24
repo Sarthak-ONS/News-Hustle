@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "341228420548",
+    "project_id": "news-hustle",
+    "storage_bucket": "news-hustle.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:341228420548:android:fe57ffe171b9c0052f7891",
+        "android_client_info": {
+          "package_name": "com.example.newshustle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "341228420548-d7nghk5117k49r2q70smn4c1o246v0re.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.newshustle",
+            "certificate_hash": "8bb2b42da76b7c51418ef8a5277bff79b9de2c3a"
+          }
+        },
+        {
+          "client_id": "341228420548-iq01fjedjnj9663ukmkd034ihmniol6h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCL_0wLHHUFtigxid1VOS-xry0VZSUBoy4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "341228420548-iq01fjedjnj9663ukmkd034ihmniol6h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

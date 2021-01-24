@@ -1,16 +1,22 @@
+import 'package:newshustle/Screens/AuthScreen.dart';
+import 'package:newshustle/Services/AuthService.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'Networking.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'Models/FirebaeNotification.dart';
+import 'Screens/CoronaVirusTab.dart';
+import 'Services/Networking.dart';
 import 'package:flutter/material.dart';
-import 'SearchDelegate.dart';
-import 'NewsModel.dart';
-import 'providerclass.dart';
-import 'FutureBuilderForTopNews.dart';
-import 'Filters.dart';
-import 'Tech.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'Providers/providerclass.dart';
+import 'Screens/FutureBuilderForTopNews.dart';
+import 'Screens/Filters.dart';
+import 'FilteredCategory.dart';
+//GqQieIHrZ5b3NQTQTp8UcTVjm4I3
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -25,7 +31,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-        create: (context) => AppData(), child: UnderLyingProvider());
+      create: (context) => AppData(),
+      child: UnderLyingProvider(),
+    );
   }
 }
 
@@ -53,7 +61,7 @@ class _UnderLyingProviderState extends State<UnderLyingProvider> {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({@required this.title});
 
   final String title;
 
@@ -63,6 +71,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  List<Fcm> messages = [];
   NewsGetter newsGetter = NewsGetter();
 
   List<Tab> _tabList = [
@@ -82,7 +92,23 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
-
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        final notification = message['notification'];
+        setState(() {
+          messages.add(Fcm(notification['title'], notification['body']));
+        });
+        print("onMessage: $message");
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print("onLaunch: $message");
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print("onResume: $message");
+      },
+    );
+    _firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
     _scrollController = ScrollController();
     _tabController = TabController(length: _tabList.length, vsync: this);
     Provider.of<AppData>(context, listen: false).storeinLocalStorage();
@@ -93,6 +119,10 @@ class _MyHomePageState extends State<MyHomePage>
     _tabController.dispose();
     super.dispose();
   }
+
+  Auth auth = Auth();
+
+  Future showSignout() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -127,21 +157,38 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
             ),
+
             ListTile(
               onTap: () {
-                print(Provider.of<AppData>(context, listen: false).somedata);
+                // print(Provider.of<AppData>(context, listen: false).somedata);
+
+                print(FirebaseAuth.instance.currentUser.uid);
               },
-              leading: IconButton(icon: Icon(Icons.add), onPressed: () {}),
-              title: Text('BookMark'),
+              leading: IconButton(
+                  icon: Icon(
+                    Icons.add,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {}),
+              title: Text(
+                'BookMark',
+                style: TextStyle(color: Colors.black, fontSize: 15),
+              ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
               child: Divider(
                 thickness: 2,
+                color: Colors.black45,
               ),
             ),
             ListTile(
-              leading: IconButton(icon: Icon(Icons.category), onPressed: () {}),
+              leading: IconButton(
+                  icon: Icon(
+                    Icons.category,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {}),
               title: Text(
                 'Change Color Theme To Red',
                 style: TextStyle(
@@ -157,9 +204,10 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
               child: Divider(
                 thickness: 2,
+                color: Colors.black45,
               ),
             ),
             ListTile(
@@ -167,13 +215,40 @@ class _MyHomePageState extends State<MyHomePage>
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => Filters()));
               },
-              leading: IconButton(icon: Icon(Icons.filter), onPressed: () {}),
+              leading: IconButton(
+                  icon: Icon(
+                    Icons.filter,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {}),
               title: Text('Filters'),
             ),
+            //showSignout(),
             Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
               child: Divider(
                 thickness: 2,
+                color: Colors.black45,
+              ),
+            ),
+            ListTile(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => AuthScreen()));
+              },
+              leading: IconButton(
+                  icon: Icon(
+                    Icons.filter,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {}),
+              title: Text('Become A User'),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+              child: Divider(
+                thickness: 2,
+                color: Colors.black54,
               ),
             ),
           ],
@@ -184,7 +259,6 @@ class _MyHomePageState extends State<MyHomePage>
           newsGetter.getNews();
         },
         child: TabBarView(
-          
           children: [
             Padding(
               padding: EdgeInsets.all(8.0),
@@ -201,7 +275,7 @@ class _MyHomePageState extends State<MyHomePage>
             Technology(),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Container(),
+              child: Coronameter(),
             ),
           ],
           controller: _tabController,
@@ -217,8 +291,11 @@ class _MyHomePageState extends State<MyHomePage>
             Icon(Icons.search),
           ],
         ),
-        onPressed: () {
+        onPressed: () async {
           print('Hey ');
+          //GqQieIHrZ5b3NQTQTp8UcTVjm4I3
+          print(FirebaseAuth.instance.currentUser.uid);
+          print("GqQieIHrZ5b3NQTQTp8UcTVjm4I3");
         },
         tooltip: 'Increment',
       ),

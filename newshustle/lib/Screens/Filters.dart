@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providerclass.dart';
-import 'Networking.dart';
+import '../Providers/providerclass.dart';
+import '../Services/Networking.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Filters extends StatefulWidget {
